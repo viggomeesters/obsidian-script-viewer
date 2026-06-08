@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Script Viewer screenshot</title>
+  <desc id="desc">A script source view with toolbar, summary pills, safety hints, and line-numbered source.</desc>
+  <rect width="1280" height="760" fill="#1f2026"/>
+  <rect x="48" y="40" width="1184" height="680" rx="16" fill="#23242a" stroke="#3c3d45"/>
+  <rect x="48" y="40" width="1184" height="58" rx="16" fill="#2a2b31"/>
+  <circle cx="80" cy="69" r="8" fill="#ff5f57"/>
+  <circle cx="106" cy="69" r="8" fill="#ffbd2e"/>
+  <circle cx="132" cy="69" r="8" fill="#28c840"/>
+  <text x="86" y="144" fill="#f4f4f5" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="750">deploy.sh</text>
+  <text x="86" y="174" fill="#a7a7ad" font-family="Menlo, Consolas, monospace" font-size="14">20_files/2026-06/deploy.sh</text>
+  <rect x="702" y="126" width="210" height="32" rx="7" fill="#191b20" stroke="#45454c"/>
+  <text x="728" y="147" fill="#d4d4d8" font-family="Inter, Arial, sans-serif" font-size="13">Search source</text>
+  <rect x="926" y="126" width="82" height="32" rx="7" fill="#2563eb"/>
+  <text x="948" y="147" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">Source</text>
+  <rect x="1016" y="126" width="88" height="32" rx="7" fill="#27272a" stroke="#45454c"/>
+  <text x="1038" y="147" fill="#d4d4d8" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">Outline</text>
+  <rect x="86" y="206" width="80" height="28" rx="14" fill="#191b20" stroke="#3c3d45"/>
+  <text x="106" y="225" fill="#d4d4d8" font-family="Menlo, Consolas, monospace" font-size="13">shell</text>
+  <rect x="178" y="206" width="88" height="28" rx="14" fill="#191b20" stroke="#3c3d45"/>
+  <text x="198" y="225" fill="#d4d4d8" font-family="Menlo, Consolas, monospace" font-size="13">24 lines</text>
+  <rect x="278" y="206" width="128" height="28" rx="14" fill="#3a1616" stroke="#7f1d1d"/>
+  <text x="298" y="225" fill="#fecaca" font-family="Menlo, Consolas, monospace" font-size="13">2 risk hints</text>
+  <rect x="86" y="258" width="1094" height="70" rx="8" fill="#2b2020" stroke="#7f1d1d"/>
+  <text x="110" y="286" fill="#fecaca" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="750">Safety hints</text>
+  <text x="110" y="312" fill="#fecaca" font-family="Menlo, Consolas, monospace" font-size="13">L10 destructive remove flags: rm -rf "$TMP_DIR"</text>
+  <rect x="86" y="360" width="1094" height="310" rx="8" fill="#111827" stroke="#3c3d45"/>
+  <g font-family="Menlo, Consolas, monospace" font-size="14">
+    <text x="116" y="394" fill="#64748b">1</text><text x="176" y="394" fill="#64748b">#!/usr/bin/env bash</text>
+    <text x="116" y="430" fill="#64748b">3</text><text x="176" y="430" fill="#64748b"># Generated deployment helper</text>
+    <text x="116" y="466" fill="#64748b">4</text><text x="176" y="466" fill="#60a5fa">export</text><text x="238" y="466" fill="#f8fafc"> LOG_DIR=./logs</text>
+    <text x="116" y="502" fill="#64748b">8</text><text x="176" y="502" fill="#f8fafc">cleanup() {</text>
+    <text x="116" y="538" fill="#64748b">10</text><text x="176" y="538" fill="#ef4444">rm -rf</text><text x="238" y="538" fill="#f8fafc"> "$TMP_DIR"</text>
+    <text x="116" y="574" fill="#64748b">14</text><text x="176" y="574" fill="#f59e0b">trap</text><text x="222" y="574" fill="#f8fafc"> cleanup EXIT</text>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+{
+  "id": "script-viewer",
+  "name": "Script Viewer",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Open shell, batch, PowerShell, and AutoHotkey files as read-only source with outline, search, and safety hints.",
+  "author": "Viggo Meesters",
+  "authorUrl": "https://github.com/viggomeesters",
+  "isDesktopOnly": false
+}

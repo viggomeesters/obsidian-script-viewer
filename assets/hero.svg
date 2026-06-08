@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420" role="img" aria-labelledby="title desc">
+  <title id="title">Script Viewer</title>
+  <desc id="desc">A dark app-style hero showing a script source and outline preview.</desc>
+  <rect width="1400" height="420" fill="#17181c"/>
+  <rect x="48" y="48" width="1304" height="324" rx="18" fill="#202126" stroke="#3b3d45"/>
+  <rect x="48" y="48" width="1304" height="52" rx="18" fill="#26272d"/>
+  <circle cx="82" cy="74" r="8" fill="#ff5f57"/>
+  <circle cx="108" cy="74" r="8" fill="#ffbd2e"/>
+  <circle cx="134" cy="74" r="8" fill="#28c840"/>
+  <text x="80" y="160" fill="#f4f4f5" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="750">Script Viewer</text>
+  <text x="82" y="204" fill="#a7a7ad" font-family="Inter, Arial, sans-serif" font-size="20">Read-only script source, outline, and safety hints</text>
+  <g transform="translate(82 246)">
+    <rect width="94" height="34" rx="8" fill="#2563eb"/>
+    <text x="22" y="23" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">Source</text>
+    <rect x="106" width="96" height="34" rx="8" fill="#27272a" stroke="#45454c"/>
+    <text x="126" y="23" fill="#d4d4d8" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">Outline</text>
+    <rect x="214" width="126" height="34" rx="8" fill="#3a1616" stroke="#7f1d1d"/>
+    <text x="236" y="23" fill="#fecaca" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">Never run</text>
+  </g>
+  <g transform="translate(704 112)">
+    <rect width="576" height="240" rx="12" fill="#111827" stroke="#3b3d45"/>
+    <g font-family="Menlo, Consolas, monospace" font-size="15">
+      <text x="34" y="48" fill="#64748b">1</text><text x="92" y="48" fill="#64748b">#!/usr/bin/env bash</text>
+      <text x="34" y="86" fill="#64748b">4</text><text x="92" y="86" fill="#60a5fa">export</text><text x="158" y="86" fill="#f8fafc"> LOG_DIR=./logs</text>
+      <text x="34" y="124" fill="#64748b">9</text><text x="92" y="124" fill="#f8fafc">cleanup()</text><text x="202" y="124" fill="#f8fafc"> {</text>
+      <text x="34" y="162" fill="#64748b">10</text><text x="92" y="162" fill="#ef4444">rm -rf</text><text x="158" y="162" fill="#f8fafc"> "$TMP_DIR"</text>
+      <text x="34" y="200" fill="#64748b">14</text><text x="92" y="200" fill="#f59e0b">trap</text><text x="138" y="200" fill="#f8fafc"> cleanup EXIT</text>
+    </g>
+    <rect x="426" y="24" width="118" height="28" rx="14" fill="#3a1616" stroke="#7f1d1d"/>
+    <text x="445" y="43" fill="#fecaca" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">1 risk hint</text>
+  </g>
+</svg>
