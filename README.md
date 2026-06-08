@@ -11,16 +11,17 @@
 
 # Script Viewer
 
-Script Viewer is a read-only Obsidian plugin for inspecting script files without turning them into runnable actions. It opens `.sh`, `.bash`, `.zsh`, `.bat`, `.cmd`, `.ps1`, `.ahk`, `.command`, and `.bats` files with line-numbered source, lightweight syntax hints, outline extraction, search, filtering, and safety-focused summaries.
+Script Viewer is a read-only Obsidian plugin for inspecting script files and safe dotfiles without turning them into runnable actions. It opens `.sh`, `.bash`, `.zsh`, `.bat`, `.cmd`, `.ps1`, `.ahk`, `.command`, `.bats`, `.env*`, `.gitignore`, `.dockerignore`, `.gitattributes`, `.gitmodules`, `.npmrc`, `.nvmrc`, and `.yarnrc` files with line-numbered source, lightweight syntax hints, outline extraction, search, filtering, and safety-focused summaries.
 
 ![Script Viewer preview](assets/screenshot.svg)
 
 ## Features
 
-- Opens only the supported script extensions listed above.
+- Opens the supported script extensions and known dotfiles listed above.
+- Routes `.env*`, `.gitignore`, and other supported dotfiles by file name so they do not fall through to external viewers.
 - Shows stable line numbers with a soft-wrap toggle.
 - Detects shebangs and likely interpreters.
-- Builds a lightweight outline for shell functions, labels, trap/alias/export/set statements, PowerShell functions, and AutoHotkey hotkeys.
+- Builds a lightweight outline for shell functions, labels, trap/alias/export/set statements, PowerShell functions, AutoHotkey hotkeys, dotenv keys, and ignore/config patterns.
 - Highlights comments, strings, variables, command substitutions, paths, URLs, flags, keywords, and risky command patterns.
 - Searches source lines and filters outline items.
 - Keeps source visible even when syntax is unfamiliar.
@@ -43,7 +44,7 @@ Script files can delete data, alter system settings, call remote endpoints, or l
 
 ## Parser strategy
 
-Script Viewer v0.1 uses local heuristics instead of full language parsers. It detects common shell, batch, PowerShell, and AutoHotkey structures while avoiding hard failures. If a line is unknown, it remains visible as source.
+Script Viewer uses local heuristics instead of full language parsers. It detects common shell, batch, PowerShell, AutoHotkey, dotenv, ignore-file, and small config-file structures while avoiding hard failures. If a line is unknown, it remains visible as source.
 
 ## Development
 

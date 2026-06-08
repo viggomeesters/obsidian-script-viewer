@@ -6,6 +6,7 @@ import {
   WorkspaceLeaf,
   setIcon,
 } from "obsidian";
+import type { OpenViewState } from "obsidian";
 import {
   OUTLINE_RENDER_LIMIT,
   ParsedScript,
@@ -17,6 +18,7 @@ import {
   filterOutline,
   findLineMatches,
   isSupportedScriptExtension,
+  isSupportedScriptPath,
   parseScript,
 } from "./parser";
 
@@ -31,6 +33,7 @@ export default class ScriptViewerPlugin extends Plugin {
       (leaf) => new ScriptViewerView(leaf),
     );
     this.registerExtensions([...SCRIPT_EXTENSIONS], VIEW_TYPE_SCRIPT_VIEWER);
+    this.register(this.patchDotfileOpenRouting());
 
     this.addCommand({
       id: "open-current-script-in-viewer",
@@ -54,6 +57,31 @@ export default class ScriptViewerPlugin extends Plugin {
       state: { file: file.path },
       active: true,
     });
+  }
+
+  private patchDotfileOpenRouting(): () => void {
+    const originalOpenFile = WorkspaceLeaf.prototype.openFile;
+
+    async function patchedOpenFile(this: WorkspaceLeaf, file: TFile, openState?: OpenViewState): Promise<void> {
+      if (isScriptFile(file)) {
+        await this.setViewState({
+          type: VIEW_TYPE_SCRIPT_VIEWER,
+          state: { file: file.path },
+          active: openState?.active ?? true,
+          group: openState?.group,
+        }, openState?.eState);
+        return;
+      }
+
+      return originalOpenFile.call(this, file, openState);
+    }
+
+    WorkspaceLeaf.prototype.openFile = patchedOpenFile;
+    return () => {
+      if (WorkspaceLeaf.prototype.openFile === patchedOpenFile) {
+        WorkspaceLeaf.prototype.openFile = originalOpenFile;
+      }
+    };
   }
 }
 
@@ -114,7 +142,7 @@ class ScriptViewerView extends TextFileView {
       return;
     }
 
-    const parsed = parseScript(this.data, this.file.extension);
+    const parsed = parseScript(this.data, this.file.path);
     const lineMatches = findLineMatches(parsed.lines, this.query);
     if (this.activeMatchIndex >= lineMatches.length) {
       this.activeMatchIndex = Math.max(0, lineMatches.length - 1);
@@ -218,7 +246,7 @@ class ScriptViewerView extends TextFileView {
   }
 
   private moveMatch(direction: -1 | 1): void {
-    const parsed = this.file ? parseScript(this.data, this.file.extension) : null;
+    const parsed = this.file ? parseScript(this.data, this.file.path) : null;
     const matches = parsed ? findLineMatches(parsed.lines, this.query) : [];
     if (matches.length === 0) return;
     this.activeMatchIndex = (this.activeMatchIndex + direction + matches.length) % matches.length;
@@ -412,7 +440,7 @@ function strongestRisk(risks: RiskHint[]): RiskHint["severity"] | null {
 }
 
 function isScriptFile(file: TFile | null): file is TFile {
-  return !!file && isSupportedScriptExtension(file.extension);
+  return !!file && (isSupportedScriptExtension(file.extension) || isSupportedScriptPath(file.path));
 }
 
 function getErrorMessage(error: unknown): string {

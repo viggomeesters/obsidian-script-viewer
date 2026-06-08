@@ -17,7 +17,9 @@ const {
   filterLines,
   filterOutline,
   findLineMatches,
+  isSupportedScriptPath,
   languageForExtension,
+  languageForPath,
   parseScript,
 } = await import(new URL("../.tmp-parser-test.mjs", import.meta.url));
 
@@ -30,6 +32,12 @@ assert.equal(languageForExtension("sh"), "shell");
 assert.equal(languageForExtension("bat"), "batch");
 assert.equal(languageForExtension("ps1"), "powershell");
 assert.equal(languageForExtension("ahk"), "autohotkey");
+assert.equal(languageForPath(".env.example"), "dotenv");
+assert.equal(languageForPath("fixtures/.gitignore"), "ignore");
+assert.equal(isSupportedScriptPath(".env"), true);
+assert.equal(isSupportedScriptPath(".env.example"), true);
+assert.equal(isSupportedScriptPath(".gitignore"), true);
+assert.equal(isSupportedScriptPath(".mcp.json"), false);
 
 const shell = parseScript(readFixture("deploy.sh"), "sh");
 assert.equal(shell.language, "shell");
@@ -66,6 +74,21 @@ assert.ok(command.shebang?.includes("zsh"));
 const bats = parseScript(readFixture("checks.bats"), "bats");
 assert.equal(bats.language, "shell");
 assert.ok(bats.outline.some((item) => item.kind === "function" || item.kind === "command"));
+
+const dotenv = parseScript(readFixture(".env.example"), ".env.example");
+assert.equal(dotenv.language, "dotenv");
+assert.equal(dotenv.interpreter, ".env.example");
+assert.ok(dotenv.outline.some((item) => item.kind === "export" && item.name === "API_URL"));
+assert.ok(dotenv.outline.some((item) => item.kind === "export" && item.name === "FEATURE_FLAG"));
+assert.equal(dotenv.commandCount, 0);
+assert.ok(dotenv.envVarCount >= 3);
+
+const gitignore = parseScript(readFixture(".gitignore"), ".gitignore");
+assert.equal(gitignore.language, "ignore");
+assert.equal(gitignore.interpreter, ".gitignore");
+assert.ok(gitignore.outline.some((item) => item.source === "node_modules/"));
+assert.ok(gitignore.lines.some((line) => line.tokens.some((token) => token.label === "negated ignore pattern")));
+assert.equal(gitignore.commandCount, 0);
 
 const harmless = parseScript(readFixture("harmless-looking.sh"), "sh");
 assert.equal(harmless.risks.length, 0);

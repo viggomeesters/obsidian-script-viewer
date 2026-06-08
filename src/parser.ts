@@ -14,7 +14,18 @@ export const SCRIPT_EXTENSIONS = [
 ] as const;
 
 export type ScriptExtension = (typeof SCRIPT_EXTENSIONS)[number];
-export type ScriptLanguage = "shell" | "batch" | "powershell" | "autohotkey" | "unknown";
+export const SCRIPT_DOTFILE_NAMES = [
+  ".dockerignore",
+  ".env",
+  ".gitattributes",
+  ".gitignore",
+  ".gitmodules",
+  ".npmrc",
+  ".nvmrc",
+  ".yarnrc",
+] as const;
+
+export type ScriptLanguage = "shell" | "batch" | "powershell" | "autohotkey" | "dotenv" | "ignore" | "config" | "unknown";
 export type TokenKind = "comment" | "string" | "variable" | "substitution" | "path" | "url" | "flag" | "risk" | "keyword";
 export type OutlineKind = "function" | "label" | "trap" | "alias" | "export" | "set" | "hotkey" | "command";
 export type RiskSeverity = "notice" | "warning" | "danger";
@@ -78,6 +89,7 @@ const SHELL_EXTENSIONS = new Set(["sh", "bash", "zsh", "command", "bats"]);
 const BATCH_EXTENSIONS = new Set(["bat", "cmd"]);
 const POWERSHELL_EXTENSIONS = new Set(["ps1"]);
 const AUTOHOTKEY_EXTENSIONS = new Set(["ahk"]);
+const DOTFILE_NAMES = new Set<string>(SCRIPT_DOTFILE_NAMES);
 
 const SHELL_KEYWORDS = new Set([
   "alias",
@@ -143,11 +155,20 @@ const RISK_PATTERNS: Record<ScriptLanguage, Array<{ pattern: RegExp; label: stri
   autohotkey: [
     { pattern: /\b(?:Run|RunWait|FileDelete|FileRemoveDir|RegWrite|RegDelete|UrlDownloadToFile|Shutdown)\b/i, label: "risky AutoHotkey command", severity: "warning" },
   ],
+  dotenv: [],
+  ignore: [],
+  config: [],
   unknown: [],
 };
 
 export function isSupportedScriptExtension(extension: string): extension is ScriptExtension {
   return SCRIPT_EXTENSIONS.includes(extension.toLowerCase() as ScriptExtension);
+}
+
+export function isSupportedScriptPath(path: string): boolean {
+  const normalizedName = basenameForPath(path).toLowerCase();
+  const extension = extensionForPath(path);
+  return isSupportedScriptExtension(extension) || DOTFILE_NAMES.has(normalizedName) || /^\.env(?:\..+)?$/i.test(normalizedName);
 }
 
 export function languageForExtension(extension: string): ScriptLanguage {
@@ -159,11 +180,21 @@ export function languageForExtension(extension: string): ScriptLanguage {
   return "unknown";
 }
 
-export function parseScript(data: string, extension: string): ParsedScript {
-  const language = languageForExtension(extension);
+export function languageForPath(path: string): ScriptLanguage {
+  const name = basenameForPath(path).toLowerCase();
+  if (/^\.env(?:\..+)?$/i.test(name)) return "dotenv";
+  if (name === ".gitignore" || name === ".dockerignore" || name === ".gitattributes") return "ignore";
+  if (name === ".gitmodules") return "config";
+  if (name === ".npmrc" || name === ".nvmrc" || name === ".yarnrc") return "config";
+  return languageForExtension(extensionForPath(path));
+}
+
+export function parseScript(data: string, identifier: string): ParsedScript {
+  const extension = extensionForPath(identifier);
+  const language = languageForPath(identifier);
   const rawLines = splitLines(data);
   const shebang = detectShebang(rawLines);
-  const interpreter = detectInterpreter(language, shebang, extension);
+  const interpreter = detectInterpreter(language, shebang, extension, basenameForPath(identifier));
   const warnings: ScriptWarning[] = [];
   const outline: OutlineItem[] = [];
   const risks: RiskHint[] = [];
@@ -259,12 +290,15 @@ function detectShebang(lines: string[]): string | null {
   return first?.startsWith("#!") ? first : null;
 }
 
-function detectInterpreter(language: ScriptLanguage, shebang: string | null, extension: string): string {
+function detectInterpreter(language: ScriptLanguage, shebang: string | null, extension: string, fileName: string): string {
   if (shebang) return shebang.replace(/^#!\s*/, "");
   if (language === "shell") return extension === "zsh" ? "zsh" : extension === "bash" || extension === "bats" ? "bash" : "shell";
   if (language === "batch") return "cmd.exe";
   if (language === "powershell") return "PowerShell";
   if (language === "autohotkey") return "AutoHotkey";
+  if (language === "dotenv") return fileName || "dotenv";
+  if (language === "ignore") return fileName || "ignore rules";
+  if (language === "config") return fileName || "config";
   return "unknown";
 }
 
@@ -326,7 +360,12 @@ function genericTokens(raw: string, codeRange: TextRange, language: ScriptLangua
   addMatches(tokens, source, /\bhttps?:\/\/[^\s"'<>]+/gi, codeRange.start, "url", "URL");
   addMatches(tokens, source, /(?:^|[\s:=])((?:~|\.{1,2}|\/)[A-Za-z0-9_./%+-]+)/g, codeRange.start, "path", "path", 1);
   addMatches(tokens, source, /(?:^|\s)(--?[A-Za-z][\w-]*|\/[A-Za-z?]+)/g, codeRange.start, "flag", "flag", 1);
-  if (language === "batch") {
+  if (language === "dotenv") {
+    addMatches(tokens, source, /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/g, codeRange.start, "variable", "environment key", 1);
+  } else if (language === "ignore") {
+    addMatches(tokens, source, /^\s*!([^\s#]+)/g, codeRange.start, "keyword", "negated ignore pattern", 1);
+    addMatches(tokens, source, /^\s*(?!\!)([^\s#]+)/g, codeRange.start, "path", "ignore pattern", 1);
+  } else if (language === "batch") {
     addMatches(tokens, source, /%[A-Za-z_][A-Za-z0-9_]*%|![A-Za-z_][A-Za-z0-9_]*!/g, codeRange.start, "variable", "environment variable");
   } else if (language === "autohotkey") {
     addMatches(tokens, source, /%[A-Za-z_][A-Za-z0-9_]*%/g, codeRange.start, "variable", "variable");
@@ -409,6 +448,7 @@ function riskTokens(raw: string, codeRange: TextRange, language: ScriptLanguage)
 
 function countVariables(raw: string, codeRange: TextRange, language: ScriptLanguage): number {
   const code = raw.slice(codeRange.start, codeRange.end);
+  if (language === "dotenv") return /^\s*(?:export\s+)?[A-Za-z_][A-Za-z0-9_]*\s*=/.test(code) ? 1 : 0;
   if (language === "batch") return countMatches(code, /%[A-Za-z_][A-Za-z0-9_]*%|![A-Za-z_][A-Za-z0-9_]*!/g);
   if (language === "autohotkey") return countMatches(code, /%[A-Za-z_][A-Za-z0-9_]*%/g);
   return countMatches(code, /\$\{?[A-Za-z_][A-Za-z0-9_]*(?::[A-Za-z_][A-Za-z0-9_]*)?\}?/g);
@@ -462,6 +502,22 @@ function outlinePatterns(language: ScriptLanguage): Array<{ pattern: RegExp; kin
       { pattern: /^Set(?:TitleMatchMode|WorkingDir|Timer)\b(.+)?/i, kind: "set", nameGroup: 0, detail: (_name, code) => code },
     ];
   }
+  if (language === "dotenv") {
+    return [
+      { pattern: /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/, kind: "export", nameGroup: 1, detail: (name) => `env ${name}` },
+    ];
+  }
+  if (language === "ignore") {
+    return [
+      { pattern: /^\s*!?([^\s#]+)/, kind: "set", nameGroup: 1, detail: (_name, code) => code },
+    ];
+  }
+  if (language === "config") {
+    return [
+      { pattern: /^\s*([A-Za-z0-9_.:-]+)\s*=/, kind: "set", nameGroup: 1, detail: (name) => `config ${name}` },
+      { pattern: /^\s*\[([^\]]+)\]/, kind: "set", nameGroup: 1, detail: (name) => `[${name}]` },
+    ];
+  }
   return [];
 }
 
@@ -483,6 +539,7 @@ function looksLikeCommand(raw: string, codeRange: TextRange, language: ScriptLan
 
 function firstCommand(code: string, language: ScriptLanguage): string | null {
   if (!code) return null;
+  if (language === "dotenv" || language === "ignore" || language === "config") return null;
   if (language === "batch" && code.startsWith(":")) return null;
   const normalized = code.replace(/^(?:if|while|for|sudo|command|builtin|call)\s+/i, "");
   const match = normalized.match(/^([A-Za-z_./~:-][A-Za-z0-9_./~:-]*)/);
@@ -551,4 +608,16 @@ function findUnquoted(raw: string, target: string): number | null {
     if (char !== "\\") escaped = false;
   }
   return null;
+}
+
+function basenameForPath(path: string): string {
+  return path.split(/[\\/]/).pop() ?? path;
+}
+
+function extensionForPath(path: string): string {
+  const name = basenameForPath(path);
+  const lastDot = name.lastIndexOf(".");
+  if (lastDot === -1) return name.toLowerCase();
+  if (lastDot <= 0 || lastDot === name.length - 1) return "";
+  return name.slice(lastDot + 1).toLowerCase();
 }
