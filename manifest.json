@@ -1,7 +1,7 @@
 {
   "id": "script-viewer",
   "name": "Script Viewer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "1.5.0",
   "description": "Open scripts and safe dotfiles as read-only source with outline, search, and safety hints.",
   "author": "Viggo Meesters",

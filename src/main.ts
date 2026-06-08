@@ -27,6 +27,8 @@ const VIEW_TYPE_SCRIPT_VIEWER = "script-viewer";
 type ViewMode = "source" | "outline";
 
 export default class ScriptViewerPlugin extends Plugin {
+  private reroutingFile: string | null = null;
+
   async onload(): Promise<void> {
     this.registerView(
       VIEW_TYPE_SCRIPT_VIEWER,
@@ -34,6 +36,9 @@ export default class ScriptViewerPlugin extends Plugin {
     );
     this.registerExtensions([...SCRIPT_EXTENSIONS], VIEW_TYPE_SCRIPT_VIEWER);
     this.register(this.patchDotfileOpenRouting());
+    this.registerEvent(this.app.workspace.on("file-open", (file) => {
+      void this.rerouteOpenScriptFile(file);
+    }));
 
     this.addCommand({
       id: "open-current-script-in-viewer",
@@ -57,6 +62,26 @@ export default class ScriptViewerPlugin extends Plugin {
       state: { file: file.path },
       active: true,
     });
+  }
+
+  private async rerouteOpenScriptFile(file: TFile | null): Promise<void> {
+    if (!isScriptFile(file)) return;
+    if (this.reroutingFile === file.path) return;
+
+    const activeLeaf = this.app.workspace.activeLeaf;
+    if (!activeLeaf) return;
+    if (activeLeaf.getViewState().type === VIEW_TYPE_SCRIPT_VIEWER) return;
+
+    this.reroutingFile = file.path;
+    try {
+      await activeLeaf.setViewState({
+        type: VIEW_TYPE_SCRIPT_VIEWER,
+        state: { file: file.path },
+        active: true,
+      });
+    } finally {
+      this.reroutingFile = null;
+    }
   }
 
   private patchDotfileOpenRouting(): () => void {
