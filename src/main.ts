@@ -13,7 +13,6 @@ import {
   RiskHint,
   SCRIPT_EXTENSIONS,
   ScriptLine,
-  ScriptToken,
   filterLines,
   filterOutline,
   findLineMatches,
@@ -68,7 +67,7 @@ export default class ScriptViewerPlugin extends Plugin {
     if (!isScriptFile(file)) return;
     if (this.reroutingFile === file.path) return;
 
-    const activeLeaf = this.app.workspace.activeLeaf;
+    const activeLeaf = this.app.workspace.getActiveViewOfType(TextFileView)?.leaf;
     if (!activeLeaf) return;
     if (activeLeaf.getViewState().type === VIEW_TYPE_SCRIPT_VIEWER) return;
 
@@ -85,6 +84,8 @@ export default class ScriptViewerPlugin extends Plugin {
   }
 
   private patchDotfileOpenRouting(): () => void {
+    // The original method is called with its receiver below and restored on unload.
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Deliberately retain the original prototype method for call(this) and restoration.
     const originalOpenFile = WorkspaceLeaf.prototype.openFile;
 
     async function patchedOpenFile(this: WorkspaceLeaf, file: TFile, openState?: OpenViewState): Promise<void> {

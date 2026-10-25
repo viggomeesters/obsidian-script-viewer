@@ -364,7 +364,7 @@ function genericTokens(raw: string, codeRange: TextRange, language: ScriptLangua
     addMatches(tokens, source, /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/g, codeRange.start, "variable", "environment key", 1);
   } else if (language === "ignore") {
     addMatches(tokens, source, /^\s*!([^\s#]+)/g, codeRange.start, "keyword", "negated ignore pattern", 1);
-    addMatches(tokens, source, /^\s*(?!\!)([^\s#]+)/g, codeRange.start, "path", "ignore pattern", 1);
+    addMatches(tokens, source, /^\s*(?!!)([^\s#]+)/g, codeRange.start, "path", "ignore pattern", 1);
   } else if (language === "batch") {
     addMatches(tokens, source, /%[A-Za-z_][A-Za-z0-9_]*%|![A-Za-z_][A-Za-z0-9_]*!/g, codeRange.start, "variable", "environment variable");
   } else if (language === "autohotkey") {
