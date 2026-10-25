@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-10-25
+
+- Cross-platform production build.
+- Plugin-version to min-app-version mapping.
+
+
 All notable changes to Script Viewer are documented here.
 
 ## 0.1.0 - 2026-06-08

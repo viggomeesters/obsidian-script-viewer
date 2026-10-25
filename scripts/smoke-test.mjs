@@ -1,6 +1,8 @@
 import fs from "node:fs";
 
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+const releasePackage = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const releaseVersions = JSON.parse(fs.readFileSync("versions.json", "utf8"));
 const main = fs.readFileSync("src/main.ts", "utf8");
 const parser = fs.readFileSync("src/parser.ts", "utf8");
 const styles = fs.readFileSync("styles.css", "utf8");
@@ -21,7 +23,7 @@ const forbiddenRuntimePatterns = [
 const assertions = [
   [manifest.id === "script-viewer", "manifest id is script-viewer"],
   [manifest.name === "Script Viewer", "manifest name is Script Viewer"],
-  [manifest.version === "0.1.2", "manifest version is 0.1.2"],
+  [manifest.version === releasePackage.version && /^\d+\.\d+\.\d+$/.test(manifest.version) && releaseVersions[manifest.version] === manifest.minAppVersion, "release version matches package and supported app version"],
   [!/obsidian/i.test(manifest.description), "manifest description avoids product name"],
   [main.includes("registerExtensions([...SCRIPT_EXTENSIONS]"), "script extensions are registered"],
   [main.includes("patchDotfileOpenRouting"), "dotfile open routing patch exists"],
