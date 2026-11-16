@@ -1,11 +1,26 @@
-# Obsidian 1.15.1 assessment — 16 November 2026
+# Obsidian 1.15.1 verification — 16 November 2026
 
-Source assessed: `92be05ab8fda22afe419bf126fafe0d94475150c`, plugin 0.1.3.
+Maintenance patch `0.1.4`. Runtime code is unchanged. The actual desktop host exercised candidate `c21ac03f290536b67c0ca9b2cc5db4e1dd3496b1` with exact source, bundle, manifest and CSS hashes. Production main.js SHA-256: `e02a4a88357d48e8fd45a0e883fdfa802b1d03914570c4e88b98b7eb2d6ab1e5`.
 
-[Obsidian desktop 1.15.1](https://obsidian.md/changelog/2026-11-12-desktop-v1.15.1/) changes startup, indexing, hidden-window timers, plugin installation settings and external opening of unrecognized attachments. A targeted source search found no `activeWindow`, Array/String `contains`, `trashFile`, `promptForDeletion`, PIXI or Mermaid use requiring a change. DOM element `contains` is a different API. This bounded search does not establish runtime compatibility.
+## Exercised behavior
 
-Local checks passed in a fresh macOS checkout using the existing lockfile and `npm ci --ignore-scripts`. Executed repository scripts: `npm run build`, `npm run test`, `npm run typecheck`. Scripts absent from package.json were skipped, not counted as successful tests. Production `main.js` SHA-256: `e02a4a88357d48e8fd45a0e883fdfa802b1d03914570c4e88b98b7eb2d6ab1e5`. Parser fixtures, test doubles and headless host tests only prove their own tested behavior.
+- Checked fixture-specific expected rendered values for `fixtures/script-viewer/profile.ps1`.
+- Executed the `Outline` control and asserted changed output.
+- Opened 8 further fixtures as smoke checks for nonempty content and no plugin-load failure; their exact semantic output was not asserted.
+- Verified unchanged hashes for every opened input, removed extension/command registrations after detaching leaves, and reloaded the primary fixture with its expected values.
 
-Actual Obsidian 1.15.1 startup, view/file opening, lifecycle and relevant settings remain unverified. No established non-disruptive background connection to a 1.15.1 host was available; the running app and the designated test vault's settings/fixtures were left untouched. No mobile or minimum-version runtime claim follows from these checks. Keep the maintenance issue open for the real-host gate. No release or version bump was made.
+## Environment and validation
 
-Locked-tree npm audit snapshot: `{"info":0,"low":0,"moderate":2,"high":0,"critical":0,"total":2}`. These are whole dependency-tree package counts, not demonstrated runtime exposure; test-only dependencies are included. No broad dependency upgrade or force-fix was applied. Remaining advisories require separate dependency triage.
+Tests use fictional fixtures in a fresh own synthetic vault on macOS arm64, the actual Obsidian 1.15.1 renderer and Electron 39.8.3. A bounded own bootstrap separates the CLI socket and test profile. Mock keychain is enabled; the regular application/CLI and installed original bytes are checked separately. Own test windows may be visible and remain unfocused. No OS mouse or keyboard input is used. The renderer uses an emulated 1800×1050 viewport; no native window geometry/throttle commands are used.
+
+Ordinary locked `npm ci`, TypeScript checking, production build, existing test scripts and production dependency audit passed. Checked-in official `eslint-plugin-obsidianmd` 0.6.0 recommended checks cover source and metadata; existing repository lint guards are retained where present. Generated/test harness artifacts are outside the official production-source lint scope. Development tooling is not shipped.
+
+## Scope limits
+
+Viewer leaves are manually detached before unload; unregister/reload proof does not establish automatic closure of every open leaf.
+
+This establishes the exercised 1.15.1 macOS behavior. It does not establish mobile, minimum-version, native-resize, authentication or real keychain behavior. Official Community source/release review, public asset readback and fresh catalog installation remain separate publication gates; a local build or screenshot alone does not establish them.
+
+## Render evidence
+
+![Actual Obsidian 1.15.1 synthetic fixture](../assets/obsidian-1.15.1.png)
